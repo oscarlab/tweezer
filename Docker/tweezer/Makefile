@@ -872,7 +872,7 @@ dbg: $(LIBRARY) $(BENCHMARKS) tools $(TESTS)
 
 # creates library and programs
 release: clean
-	LIB_MODE=$(LIB_MODE) DEBUG_LEVEL=0 $(MAKE) $(LIBRARY) tools db_bench
+	LIB_MODE=$(LIB_MODE) DEBUG_LEVEL=0 $(MAKE) $(LIBRARY) tools db_bench ycsb_bin
 
 coverage: clean
 	COVERAGEFLAGS="-fprofile-arcs -ftest-coverage" LDFLAGS+="-lgcov" $(MAKE) J=1 all check
@@ -1368,6 +1368,9 @@ librocksdb_env_basic_test.a: $(OBJ_DIR)/env/env_basic_test.o $(LIB_OBJECTS) $(TE
 	$(AM_V_at)$(AR) $(ARFLAGS) $@ $^
 
 db_bench: $(OBJ_DIR)/tools/db_bench.o $(BENCH_OBJECTS) $(TESTUTIL) $(LIBRARY)
+	$(AM_LINK)
+
+ycsbc_bin: $(OBJ_DIR)/ycsbc/ycsbc.o $(OBJ_DIR)/ycsbc/core_workload.o $(OBJ_DIR)/ycsbc/db_factory.o $(OBJ_DIR)/ycsbc/rocks_db.o $(BENCH_OBJECTS) $(TESTUTIL) $(LIBRARY)
 	$(AM_LINK)
 
 trace_analyzer: $(OBJ_DIR)/tools/trace_analyzer.o $(ANALYZE_OBJECTS) $(TOOLS_LIBRARY) $(LIBRARY)
