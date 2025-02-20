@@ -62,7 +62,7 @@ std::map<string, string> default_props = {
   {"splinterdb.use_stats", "0"},
   {"splinterdb.reclaim_threshold", "0"},
 
-  {"rocksdb.database_filename", "rocksdb.db"},
+  {"rocksdb.database_filename", "/mnt/rocksdb.db"},
 };
 
 
@@ -385,4 +385,3 @@ void UsageMessage(const char *command) {
 inline bool StrStartWith(const char *str, const char *pre) {
   return strncmp(str, pre, strlen(pre)) == 0;
 }
-
