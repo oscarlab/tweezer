@@ -141,17 +141,12 @@ int main(const int argc, const char *argv[]) {
   } else if (props.GetProperty("progress", "none") == "percent") {
     pmode = percent_progress;
   }
+
   vector<future<int>> actual_ops;
   uint64_t record_count;
   uint64_t total_ops;
   uint64_t sum;
   utils::Timer<double> timer;
-
-  ycsbc::DB *db = ycsbc::DBFactory::CreateDB(props, load_workload.preloaded);
-  if (!db) {
-    cout << "Unknown database name " << props["dbname"] << endl;
-    exit(0);
-  }
 
   record_count = stoi(load_workload.props[ycsbc::CoreWorkload::RECORD_COUNT_PROPERTY]);
   uint64_t batch_size = sqrt(record_count);
@@ -168,6 +163,12 @@ int main(const int argc, const char *argv[]) {
 
   // Perform the Load phase
   if (!load_workload.preloaded) {
+    ycsbc::DB *db = ycsbc::DBFactory::CreateDB(props, load_workload.preloaded);
+    if (!db) {
+      cout << "Unknown database name " << props["dbname"] << endl;
+      exit(0);
+    }
+
     timer.Start();
     {
       cerr << "# Loading records:\t" << record_count << endl;
@@ -192,11 +193,17 @@ int main(const int argc, const char *argv[]) {
     cerr << "# Load throughput (KTPS)" << endl;
     cerr << props["dbname"] << '\t' << load_workload.filename << '\t' << num_threads << '\t';
     cerr << sum / load_duration / 1000 << endl;
-  }
 
+    delete db;
+  }
 
   // Perform any Run phases
   for (unsigned int i = 0; i < run_workloads.size(); i++) {
+    ycsbc::DB *db = ycsbc::DBFactory::CreateDB(props, true);
+    if (!db) {
+      cout << "Unknown database name " << props["dbname"] << endl;
+      exit(0);
+    }
     auto workload = run_workloads[i];
     for (unsigned int i = 0; i < num_threads; ++i) {
       wls[i].InitRunWorkload(workload.props, num_threads, i);
@@ -229,9 +236,8 @@ int main(const int argc, const char *argv[]) {
     cerr << "# Transaction throughput (KTPS)" << endl;
     cerr << props["dbname"] << '\t' << workload.filename << '\t' << num_threads << '\t';
     cerr << sum / run_duration / 1000 << endl;
+    delete db;
   }
-
-  delete db;
 }
 
 void ParseCommandLine(int argc, const char *argv[], utils::Properties &props, WorkloadProperties &load_workload, vector<WorkloadProperties> &run_workloads) {
