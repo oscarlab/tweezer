@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cinttypes>
 #include <cstdio>
+#include <iostream>
 #include <map>
 #include <set>
 #include <sstream>
@@ -105,7 +106,7 @@
 #ifdef CACHE
 #include "sgx/untrusted_memory_allocator.h"
 #endif
-
+#include "sgx/hmac.h"
 
 namespace ROCKSDB_NAMESPACE {
 #ifdef CACHE
@@ -3853,6 +3854,8 @@ Status DB::DestroyColumnFamilyHandle(ColumnFamilyHandle* column_family) {
 DB::~DB() {}
 
 Status DBImpl::Close() {
+  std::cout << "total hashes:" << get_num_hashes() << std::endl;
+  std::cout << "total hashed bytes:" << get_hashed_bytes() << std::endl;
   if (!closed_) {
     {
       InstrumentedMutexLock l(&mutex_);

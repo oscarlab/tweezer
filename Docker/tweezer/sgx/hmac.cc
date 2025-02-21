@@ -12,13 +12,24 @@ namespace ROCKSDB_NAMESPACE{
 extern std::map<uint64_t, std::string> KeyList;
 extern pthread_rwlock_t key_lock;
 
+static std::atomic<uint64_t>  num_hashes;
+static std::atomic<uint64_t>  num_hashed_bytes;
 
 void digest(unsigned char* hmac, const Slice block,std::string sst_key){
 	const unsigned char* key = (const unsigned char*)sst_key.data();
 //Solving Memory corruption
 	unsigned int n;
 	HMAC(EVP_sha3_384(), key, 32,(const unsigned char*) block.data(), block.size(), hmac,&n);
+        num_hashes += 1;
+        num_hashed_bytes += block.size();
+}
 
+uint64_t get_num_hashes() {
+   return num_hashes;
+}
+
+uint64_t get_hashed_bytes() {
+   return num_hashed_bytes;
 }
 
 }
