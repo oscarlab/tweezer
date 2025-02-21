@@ -25,11 +25,17 @@ void digest(unsigned char* hmac, const Slice block,std::string sst_key){
 }
 
 uint64_t get_num_hashes() {
-   return num_hashes;
+  uint64_t rv = num_hashes;
+  /* Implicitly reset this on each phase of the benchmark */
+  num_hashes = 0;
+  return rv;
 }
 
 uint64_t get_hashed_bytes() {
-   return num_hashed_bytes;
+  uint64_t rv = num_hashed_bytes;
+  /* Implicitly reset this on each phase of the benchmark */
+  num_hashed_bytes = 0;
+  return rv;
 }
 
 }
