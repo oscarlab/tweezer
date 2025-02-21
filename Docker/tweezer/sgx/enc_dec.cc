@@ -35,7 +35,7 @@ bool isKeyExist(std::string FileName){
 }
 
 void GenerateKey(std::string FileName, unsigned char* out){
-	uint64_t table_number = TableFileNameToNumber(FileName); 
+	uint64_t table_number = TableFileNameToNumber(FileName);
 	unsigned char new_key[32];
 	int result = RAND_bytes(new_key,32);
 	if (result == -1)
@@ -89,11 +89,12 @@ std::string FilenameToKey(std::string file_name){
 	key = KeyList[table_number];
 	pthread_rwlock_unlock(&key_lock);
 	return key;
-} 
+}
 
 // data, key, iv, aad : Input
 // tags : Output
 void Encryption(Slice data, unsigned char* key, unsigned char* iv, unsigned char *aad, unsigned char *tags) {
+#if 0
   EVP_CIPHER_CTX *ctx;
   unsigned char *outbuf = (unsigned char*) data.data();
   int outlen;
@@ -110,11 +111,13 @@ void Encryption(Slice data, unsigned char* key, unsigned char* iv, unsigned char
 		//tags : 16 bytes (128bits)
 	  EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_GET_TAG, 16, tags);
   EVP_CIPHER_CTX_free(ctx);
+#endif
 }
 
 // data, key, iv, aad, tags : Input
 // data : Output
 void Decryption(Slice data, unsigned char* key, unsigned char* iv, unsigned char *aad, unsigned char *tags) {
+#if 0
 	unsigned char *outbuf = (unsigned char *)data.data();
 	int outlen;
   EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
@@ -134,11 +137,13 @@ void Decryption(Slice data, unsigned char* key, unsigned char* iv, unsigned char
 		}
 	} else {
 		EVP_DecryptFinal_ex(ctx, outbuf, &outlen);
-	}	
+	}
   EVP_CIPHER_CTX_free(ctx);
+#endif
 }
 
 void log_encrypt(const Slice &record, char* key, char* tags, char* aad){
+#if 0
 	unsigned char* target_aad = aad ? (unsigned char*) aad : (unsigned char*)gcm_aad;
 	size_t target_aad_size = aad ? 16 : sizeof(gcm_aad);
 	const unsigned char* log_key = reinterpret_cast<const unsigned char*>(key);
@@ -161,10 +166,11 @@ void log_encrypt(const Slice &record, char* key, char* tags, char* aad){
 		EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_GET_TAG, 16, tags);
 	}
 	EVP_CIPHER_CTX_free(ctx);
-
+#endif
 }
 
 void log_decrypt(const Slice &record, char* key,char *tags, char* aad){
+#if 0
 	unsigned char* target_aad = aad ? (unsigned char*) aad : (unsigned char*)gcm_aad;
   size_t target_aad_size = aad ? 16 : sizeof(gcm_aad);
 	const unsigned char* log_key = reinterpret_cast<const unsigned char*>(key);
@@ -187,7 +193,7 @@ void log_decrypt(const Slice &record, char* key,char *tags, char* aad){
 		exit(-1);
 	}
 	EVP_CIPHER_CTX_free(ctx);
-
+#endif
 }
 
 void GenerateRandomBytes(char *output, int size) {
