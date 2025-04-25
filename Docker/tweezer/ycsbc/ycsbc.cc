@@ -236,6 +236,11 @@ int main(const int argc, const char *argv[]) {
     cerr << "# Transaction throughput (KTPS)" << endl;
     cerr << props["dbname"] << '\t' << workload.filename << '\t' << num_threads << '\t';
     cerr << sum / run_duration / 1000 << endl;
+
+    for (unsigned int i = 0; i < num_threads; ++i) {
+      wls[i].DeInitRunWorkload();
+    }
+
     delete db;
   }
 }

@@ -79,7 +79,7 @@ const string CoreWorkload::OPERATION_COUNT_PROPERTY = "operationcount";
 void CoreWorkload::InitLoadWorkload(const utils::Properties &p, unsigned int nthreads, unsigned int this_thread, BatchedCounterGenerator *key_generator) {
   (void)nthreads;
   table_name_ = p.GetProperty(TABLENAME_PROPERTY,TABLENAME_DEFAULT);
-  
+
   field_count_ = std::stoi(p.GetProperty(FIELD_COUNT_PROPERTY,
                                          FIELD_COUNT_DEFAULT));
   field_len_generator_ = GetFieldLenGenerator(p);
@@ -119,7 +119,7 @@ void CoreWorkload::InitRunWorkload(const utils::Properties &p, unsigned int nthr
                                                    SCAN_PROPORTION_DEFAULT));
   double readmodifywrite_proportion = std::stod(p.GetProperty(
       READMODIFYWRITE_PROPORTION_PROPERTY, READMODIFYWRITE_PROPORTION_DEFAULT));
-  
+
   std::string request_dist = p.GetProperty(REQUEST_DISTRIBUTION_PROPERTY,
                                            REQUEST_DISTRIBUTION_DEFAULT);
   int max_scan_len = std::stoi(p.GetProperty(MAX_SCAN_LENGTH_PROPERTY,
@@ -131,7 +131,7 @@ void CoreWorkload::InitRunWorkload(const utils::Properties &p, unsigned int nthr
                                                     READ_ALL_FIELDS_DEFAULT));
   write_all_fields_ = utils::StrToBool(p.GetProperty(WRITE_ALL_FIELDS_PROPERTY,
                                                      WRITE_ALL_FIELDS_DEFAULT));
-  
+
   if (read_proportion > 0) {
     op_chooser_.AddValue(READ, read_proportion);
   }
@@ -147,10 +147,10 @@ void CoreWorkload::InitRunWorkload(const utils::Properties &p, unsigned int nthr
   if (readmodifywrite_proportion > 0) {
     op_chooser_.AddValue(READMODIFYWRITE, readmodifywrite_proportion);
   }
-  
+
   if (request_dist == "uniform") {
     key_chooser_ = new UniformGenerator(generator_, 0, record_count_ - 1);
-    
+
   } else if (request_dist == "zipfian") {
     // If the number of keys changes, we don't want to change popular keys.
     // So we construct the scrambled zipfian generator with a keyspace
@@ -160,16 +160,16 @@ void CoreWorkload::InitRunWorkload(const utils::Properties &p, unsigned int nthr
     int op_count = std::stoi(p.GetProperty(OPERATION_COUNT_PROPERTY));
     int new_keys = (int)(op_count * insert_proportion * 2); // a fudge factor
     key_chooser_ = new ScrambledZipfianGenerator(generator_, record_count_ + new_keys);
-    
+
   } else if (request_dist == "latest") {
     key_chooser_ = new SkewedLatestGenerator(generator_, *key_generator_);
-    
+
   } else {
     throw utils::Exception("Unknown request distribution: " + request_dist);
   }
-  
+
   field_chooser_ = new UniformGenerator(generator_, 0, field_count_ - 1);
-  
+
   if (scan_len_dist == "uniform") {
     scan_len_chooser_ = new UniformGenerator(generator_, 1, max_scan_len);
   } else if (scan_len_dist == "zipfian") {
@@ -180,6 +180,16 @@ void CoreWorkload::InitRunWorkload(const utils::Properties &p, unsigned int nthr
   }
 
   //batch_size_ = 1;
+}
+
+void CoreWorkload::DeInitRunWorkload() {
+  delete key_chooser_;
+  delete field_chooser_;
+  delete scan_len_chooser_;
+  // Have to set to NULL; Otherwise, destructor will delete them again.
+  key_chooser_ = NULL;
+  field_chooser_ = NULL;
+  scan_len_chooser_ = NULL;
 }
 
 ycsbc::Generator<uint64_t> *CoreWorkload::GetFieldLenGenerator(
@@ -232,4 +242,3 @@ void CoreWorkload::BuildUpdate(std::vector<ycsbc::DB::KVPair> &update) {
   pair.second.append(field_len_generator_->Next(), uniform_letter_dist_(generator_));
   update.push_back(pair);
 }
-
