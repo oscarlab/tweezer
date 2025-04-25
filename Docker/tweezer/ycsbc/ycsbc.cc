@@ -238,7 +238,7 @@ int main(const int argc, const char *argv[]) {
     cerr << sum / run_duration / 1000 << endl;
 
     for (unsigned int i = 0; i < num_threads; ++i) {
-      wls[i].deInitRunWorkload(workload.props, num_threads, i);
+      wls[i].DeInitRunWorkload();
     }
 
     delete db;
