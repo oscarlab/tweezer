@@ -105,6 +105,8 @@ void CoreWorkload::InitLoadWorkload(const utils::Properties &p, unsigned int nth
 
 
 void CoreWorkload::InitRunWorkload(const utils::Properties &p, unsigned int nthreads, unsigned int this_thread) {
+  op_chooser_.Reset();
+
   generator_.seed(this_thread * 3423452437 + 8349344563457);
 
   double read_proportion = std::stod(p.GetProperty(READ_PROPORTION_PROPERTY,
@@ -146,6 +148,8 @@ void CoreWorkload::InitRunWorkload(const utils::Properties &p, unsigned int nthr
     op_chooser_.AddValue(READMODIFYWRITE, readmodifywrite_proportion);
   }
   
+  op_chooser_.UpdateGenerator();
+  
   if (request_dist == "uniform") {
     key_chooser_ = new UniformGenerator(generator_, 0, record_count_ - 1);
     
@@ -178,6 +182,16 @@ void CoreWorkload::InitRunWorkload(const utils::Properties &p, unsigned int nthr
   }
 
   //batch_size_ = 1;
+}
+
+void CoreWorkload::DeInitRunWorkload() {
+  delete key_chooser_;
+  delete field_chooser_;
+  delete scan_len_chooser_;
+  // Have to set to NULL; Otherwise, destructor will delete them again.
+  key_chooser_ = NULL;
+  field_chooser_ = NULL;
+  scan_len_chooser_ = NULL;
 }
 
 ycsbc::Generator<uint64_t> *CoreWorkload::GetFieldLenGenerator(
