@@ -1,4 +1,10 @@
 function determine_sgx_device {
+    # in-kernel driver support
+    if [[ -c /dev/sgx/enclave && -c /dev/sgx/provision ]]; then
+        export MOUNT_SGXDEVICE="--device=/dev/sgx/enclave --device=/dev/sgx/provision"
+        export SGXDEVICE="/dev/sgx/enclave"
+        return
+    fi
     export SGXDEVICE="/dev/sgx"
     export MOUNT_SGXDEVICE="--device=/dev/sgx"
     if [[ ! -e "$SGXDEVICE" ]] ; then
